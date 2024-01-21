@@ -1,5 +1,5 @@
 type Query {
-    job: Job
+    jobs: [Job!]
 }
 
 type Job {
