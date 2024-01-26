@@ -13,3 +13,9 @@ data base:
 
 server web framework:
 - express (most common choice among api frameworks in js)
+
+Topics:
+- Building a web service with express and graphql middleware
+- Defining custom object types like Job or Company
+- Implementing object association between Job and Company
+- Add documentation comments
