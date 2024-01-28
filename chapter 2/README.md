@@ -19,3 +19,14 @@ Topics:
 - Defining custom object types like Job or Company
 - Implementing object association between Job and Company
 - Add documentation comments
+
+
+chapter 3 (FE):
+- npm install graphql-request graphql
+- graphql-request is a minimal graphql client and taks care of common stuff like:
+    - setting the right headers
+    - converting the request body to json
+    - parsing the response
+
+- start client: npm start
+- start server: node server.js
