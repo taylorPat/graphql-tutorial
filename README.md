@@ -21,14 +21,51 @@ Graphql is a query language for consuming data from an API but also a runtime fo
 ## GraphQL in action
 
 ### 1. Define your first GraphQL API
+First we define a ``server.js`` file:
+
 ```js
 const typeDefs = `#graphql
+    schema {
+        query: Query
+    }
+
     type Query {
         greeting: String
     }
 `
 ```
+<details>
+<summary>Colapse here to see the full server.js</summary>
+
+```js
+import { ApolloServer } from '@apollo/server';
+import { startStandaloneServer} from '@apollo/server/standalone';
+
+const typeDefs = `#graphql
+    schema {
+        query: Query
+    }
+
+    type Query {
+        greeting: String
+    }
+`
+
+const resolvers = {
+    greeting: () => 'Hello World'
+}
+
+const server = new ApolloServer({ typeDefs, resolvers });
+const info = await startStandaloneServer(server, { listen: {port: 9000}});
+console.log(`Server is running at $(info.url)`);
+
+```
+</details>
+
 In this example ``typeDefs`` represents the interface of your API and declares which fields a client can request. It use the schema definition language which was defined to create a graphql schema.
+
+> [!TIP] You do not have to explicitly define the schema in this case because like this it is defined by default
+
 
 ### 2. Define a resolver function
 In addition you also need to a asign a value to your defined fields through defining a ``resolvers`` function:
@@ -61,6 +98,9 @@ This will install two packages:
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer} from '@apollo/server/standalone';
 
+# schema 
+# resolver
+
 const server = new ApolloServer({ typeDefs, resolvers });
 const info = await startStandaloneServer(server, { listen: {port: 9000}});
 console.log(`Server is running at $(info.url)`);
@@ -70,10 +110,11 @@ console.log(`Server is running at $(info.url)`);
 
 > [!TIP] You could use object destructuring to unpack properties of an object. For example you could write ``const { url }`` instead of ``const info`` and then use it directly in the console log instead of ``info.url``
 
+### 5. Run the server
+To provide your first GraphQL API over HTTP run apollo server:
 
-<details>
-<summary>TITLE</summary>
+``>>> node server.js``
 
-BODY CONTENT
+It will open a page in the browser which is called Apollo Sandbox. You can use this tool to make GraphQL queries. Sandbox is a web based GraphQL client which provides you the oportunity to call any GraphQL API.
 
-</details>
+
