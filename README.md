@@ -18,9 +18,9 @@ Graphql is a query language for consuming data from an API but also a runtime fo
 - Evolve your API without versions
 - You can bring GraphQL easily into your system without changing your data or business logic since GraphQL provides the api layer
 
-## GraphQL in action
+## GraphQL in action: Define your first GraphQL API
 
-### 1. Define your first GraphQL API
+### 1. Define a schema
 First we define a ``server.js`` file:
 
 ```js
@@ -117,4 +117,24 @@ To provide your first GraphQL API over HTTP run apollo server:
 
 It will open a page in the browser which is called Apollo Sandbox. You can use this tool to make GraphQL queries. Sandbox is a web based GraphQL client which provides you the oportunity to call any GraphQL API.
 
+## Implement the clients code
+TBD
 
+## Apollo Server with Express, Custom Object Types, Arrays and Nullability
+TBD
+
+## Handling errors
+When the server encounters errors to handle the query it sends back a list of errors inside the response (``"data": [], "errors": [...]``) that have occured while the query was executed. Inside this error array you get information about each error containing an error code plus the stacktrace.
+
+There are different built-in errors defined by apollo you can handle (https://www.apollographql.com/docs/apollo-server/data/errors#built-in-error-codes). 
+
+But in addition you can also create custom errors like so:
+
+```js
+import { GraphQLError } from 'graphql';
+
+throw new GraphQLError(message, {
+  extensions: { code: 'YOUR_ERROR_CODE', myCustomExtensions },
+});
+```
+> [!TIP] You can provide abitrary fields to the error's extension object to provide useful information to the client
