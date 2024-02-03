@@ -1,0 +1,79 @@
+# Learning GraphQL programmatically
+
+This page summarizes everything you should need to know about GraphQL in theory. In addition there are also practical examples.
+
+## What is GraphQL?
+Graphql is a query language for consuming data from an API but also a runtime for providing data to those API queries. It was developed by Facebook in 2012 and open sourced in 2015. Facebook wanted to define a new way for making requests to the server since there apps were very slow because of to many requests. They had the problem of overfetching and underfetching data (see below).
+
+### What is the advantage of GraphQL?
+- it provides complete and understandable description of the data in your API
+-  the client can ask for what he needs
+- easier evolving of a API over time
+- enables powerful developer tools
+
+### Why do we need GraphQL when there is REST?
+- GraphQL prevents you from *overfetching* which means you just get the data you need (REST does not prevents you from *overfetching* because there is a fixed response schema)
+- With GraphQL you can get many resources with just one request and so avoids *underfetching* (with REST you probably need to make more requests to get the same data or you have to define a batch route) 
+- Defined schemas which fully represents your API (=typed system) (for REST when you use the OpenAPI specification you also provide typed systems)
+- Evolve your API without versions
+- You can bring GraphQL easily into your system without changing your data or business logic since GraphQL provides the api layer
+
+## GraphQL in action
+
+### 1. Define your first GraphQL API
+```js
+const typeDefs = `#graphql
+    type Query {
+        greeting: String
+    }
+`
+```
+In this example ``typeDefs`` represents the interface of your API and declares which fields a client can request. It use the schema definition language which was defined to create a graphql schema.
+
+### 2. Define a resolver function
+In addition you also need to a asign a value to your defined fields through defining a ``resolvers`` function:
+```js
+const resolvers = {
+    greeting: () => 'Hello World'
+}
+```
+
+### 3. Install the dependencies 
+Now we want to expose our API over HTTP, the most common way to provide GraphQL APIs to the client. To do so we use a libary called ``Apollo Server`` which is a popular GraphQL implementation for javascript.
+
+First we define a ``package.json``
+```json
+{
+    "name": "my-first-graphql-api",
+    "private": true,
+    "type": "module",
+}
+```
+Then in your terminal run:
+``>>> npm install @apollo/server graphql``
+
+This will install two packages:
+- apollo/server which will expose your API via HTTP
+- graphql which will provide core graphql functionality
+
+### 4. Define Apollo server
+```js
+import { ApolloServer } from '@apollo/server';
+import { startStandaloneServer} from '@apollo/server/standalone';
+
+const server = new ApolloServer({ typeDefs, resolvers });
+const info = await startStandaloneServer(server, { listen: {port: 9000}});
+console.log(`Server is running at $(info.url)`);
+
+```
+> [!TIP] Using so called Backtick delimited strings aka template literal you can insert an expression into your string
+
+> [!TIP] You could use object destructuring to unpack properties of an object. For example you could write ``const { url }`` instead of ``const info`` and then use it directly in the console log instead of ``info.url``
+
+
+<details>
+<summary>TITLE</summary>
+
+BODY CONTENT
+
+</details>
