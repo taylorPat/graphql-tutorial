@@ -138,3 +138,8 @@ throw new GraphQLError(message, {
 });
 ```
 > [!TIP] You can provide abitrary fields to the error's extension object to provide useful information to the client
+
+## Mutations
+Until now we were only able to read data from our GraphQL API. But in real world scenarios we also want to give the client the ability to send new data to the GraphQL API so that the server can save this data inside the database.
+
+In GraphQL we can achieve this by defining ***mutations***. 
