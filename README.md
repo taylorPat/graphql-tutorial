@@ -181,7 +181,7 @@ export const resolvers = {
 ```
 
 > [!NOTE]  
-> For testing the mutation we hardcoded the ``companyId = 'FjcJCHJALA4i'``. Later we will replace it so that it is dynamically created.
+> For testing the mutation we hardcoded the ``companyId = 'FjcJCHJALA4i'``.
 ### Test the API
 
 And that's it. Now lets check in the Apollo Sandbox:  
@@ -251,7 +251,7 @@ And then you can implement the variables like:
 > This way you can separte the definition of your arguments from the mutation but you have to write huge amount of boilderplate code and it will get even worse with more and more arguments.
 </details>
 
-## Input types
+### Input types
 To overcome the drawback of having to many variables while using the variables section there is a server side fix.
 
 Rewrite your ``schema.graphql`` that it looks like as followed:
