@@ -183,6 +183,7 @@ export const resolvers = {
 
 And that's it. Now lets check in the Apollo Sandbox:
 Start your apollo server by running ``node server.js`` inside your ``/server`` folder and open ``localhost:9000/graphql`` in your browser.
+
 > [!HINT]  
 > At the beginning you have to install the dependencies by running ``npm install`` to make the service run succesfully.
 
@@ -262,7 +263,7 @@ input CreateJobInput {
 ```
 We defined a new custom object type ``CreateJobInput`` which is of type ``input``. It is used as an argument inside the ``createJob`` mutation.
 
-> [HINT!]  
+> [!HINT]  
 > ``type`` vs. ``input``: object types like ``type`` are **output types** which respresent data the server sends back to the client. While on the other side the ``input`` type is an object that is send by the client and can only be used as an argument.
 
 Besides that you also have to make a small adaption inside your ``resolver.js`` file:
