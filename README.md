@@ -148,19 +148,19 @@ Until now we were only able to read data from our GraphQL API. But in real world
 
 In GraphQL we can achieve this by defining ***mutations***. 
 
-Let's implement a mutation inside our graphql.schema:
+Let's implement a mutation inside our ``graphql.schema``:
 ```js
 type Mutation {
   createJob(title: String!, description: String): Job
 }
 ```
-We introduce a new object type called ``Mutation``. Until now we only just the object type ``Query`` to read data from our API. In order to write data to the API we now need to define an object type ``Mutation``.
+We introduce a new object type called ``Mutation``. Until now we have just used the object type ``Query`` to read data from our API. In order to write data to the API we now need to define an object type ``Mutation``.
 
 Inside the ``Mutation`` you pass it the ``createJob`` operation which gets the arguments ``title`` and ``description``. You can see that the ``title`` is mandatory by looking at the type hint ``String!`` and the ``description`` is optional ``String``. It follows the type definition of the object type ``Job``.
 
 As always after defining the schema we have to implement the resolver function.
 
-Let's jump into your resolvers.js:
+Let's jump into your ``resolvers.js``:
 
 ```js
 export const resolvers = {
@@ -179,9 +179,12 @@ export const resolvers = {
   # Job
 }
 ```
+
+> [!NOTE]  
+> For testing the mutation we hardcoded the ``companyId = 'FjcJCHJALA4i'``. Later we will replace it so that it is dynamically created.
 ### Test the API
 
-And that's it. Now lets check in the Apollo Sandbox:
+And that's it. Now lets check in the Apollo Sandbox:  
 Start your apollo server by running ``node server.js`` inside your ``/server`` folder and open ``localhost:9000/graphql`` in your browser.
 
 > [!NOTE]  
@@ -248,6 +251,7 @@ And then you can implement the variables like:
 > This way you can separte the definition of your arguments from the mutation but you have to write huge amount of boilderplate code and it will get even worse with more and more arguments.
 </details>
 
+## Input types
 To overcome the drawback of having to many variables while using the variables section there is a server side fix.
 
 Rewrite your ``schema.graphql`` that it looks like as followed:
@@ -266,11 +270,13 @@ We defined a new custom object type ``CreateJobInput`` which is of type ``input`
 > [!NOTE]  
 > ``type`` vs. ``input``: object types like ``type`` are **output types** which respresent data the server sends back to the client. While on the other side the ``input`` type is an object that is send by the client and can only be used as an argument.
 
-Besides that you also have to make a small adaption inside your ``resolver.js`` file:
+Besides that you also have to make a small adaption inside your ``resolver.js`` file:  
+``createJob: (_root, { input: {title, description }})``  
 
+The whole mutation then looks like:
 ```js
   Mutation: {
-    createJob: (_root, { ==input: {title, description }}) == => {
+    createJob: (_root, { input: {title, description }}) == => {
       const companyId = 'FjcJCHJALA4i'
       const job = createJob({companyId, title, description})
       return job
