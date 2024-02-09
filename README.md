@@ -140,7 +140,8 @@ throw new GraphQLError(message, {
   extensions: { code: 'YOUR_ERROR_CODE', myCustomExtensions },
 });
 ```
-> [!TIP] You can provide abitrary fields to the error's extension object to provide useful information to the client
+> [!TIP]  
+> You can provide abitrary fields to the error's extension object to provide useful information to the client
 
 ## Mutations
 Until now we were only able to read data from our GraphQL API. But in real world scenarios we also want to give the client the ability to send new data to the GraphQL API so that the server can save this data inside the database.
@@ -182,7 +183,8 @@ export const resolvers = {
 
 And that's it. Now lets check in the Apollo Sandbox:
 Start your apollo server by running ``node server.js`` inside your ``/server`` folder and open ``localhost:9000/graphql`` in your browser.
-> [!HINT] At the beginning you have to install the dependencies by running ``npm install`` to make the service run succesfully.
+> [!HINT]  
+> At the beginning you have to install the dependencies by running ``npm install`` to make the service run succesfully.
 
 Now define the following mutation to define a new custom object tpye ``Job`` item:
 ```graphql
@@ -241,7 +243,7 @@ And then you can implement the variables like:
   "description": "A small description"
 }
 ```
-> [CAUTION!]  
+> [!CAUTION]  
 > This way you can separte the definition of your arguments from the mutation but you have to write huge amount of boilderplate code and it will get even worse with more and more arguments.
 </details>
 
