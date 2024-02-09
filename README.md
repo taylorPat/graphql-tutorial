@@ -293,4 +293,5 @@ And the variables section looks like:
 }
 ```
 Run the mutation again and you will get the same result.
->[!TIP] In the mutation you can prefix the ``createJob`` like ``job: createJob(input: $input)``. With that small adaption you get a ``"job"`` object inside your json response.
+> [!NOTE]  
+> In the mutation you can prefix the ``createJob`` like ``job: createJob(input: $input)``. With that small adaption you get a ``"job"`` object inside your json response.
