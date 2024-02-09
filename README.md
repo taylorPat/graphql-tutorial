@@ -64,7 +64,8 @@ console.log(`Server is running at $(info.url)`);
 
 In this example ``typeDefs`` represents the interface of your API and declares which fields a client can request. It use the schema definition language which was defined to create a graphql schema.
 
-> [!TIP] You do not have to explicitly define the schema in this case because like this it is defined by default
+> [!TIP]  
+> You do not have to explicitly define the schema in this case because like this it is defined by default
 
 
 ### 2. Define a resolver function
@@ -106,9 +107,11 @@ const info = await startStandaloneServer(server, { listen: {port: 9000}});
 console.log(`Server is running at $(info.url)`);
 
 ```
-> [!TIP] Using so called Backtick delimited strings aka template literal you can insert an expression into your string
+> [!TIP]  
+> Using so called Backtick delimited strings aka template literal you can insert an expression into your string
 
-> [!TIP] You could use object destructuring to unpack properties of an object. For example you could write ``const { url }`` instead of ``const info`` and then use it directly in the console log instead of ``info.url``
+> [!TIP]  
+> You could use object destructuring to unpack properties of an object. For example you could write ``const { url }`` instead of ``const info`` and then use it directly in the console log instead of ``info.url``
 
 ### 5. Run the server
 To provide your first GraphQL API over HTTP run apollo server:
@@ -238,7 +241,8 @@ And then you can implement the variables like:
   "description": "A small description"
 }
 ```
->[CAUTION!] This way you can separte the definition of your arguments from the mutation but you have to write huge amount of boilderplate code and it will get even worse with more and more arguments.
+> [CAUTION!]  
+> This way you can separte the definition of your arguments from the mutation but you have to write huge amount of boilderplate code and it will get even worse with more and more arguments.
 </details>
 
 To overcome the drawback of having to many variables while using the variables section there is a server side fix.
@@ -256,13 +260,14 @@ input CreateJobInput {
 ```
 We defined a new custom object type ``CreateJobInput`` which is of type ``input``. It is used as an argument inside the ``createJob`` mutation.
 
->[HINT!] ``type`` vs. ``input``: object types like ``type`` are **output types** which respresent data the server sends back to the client. While on the other side the ``input`` type is an object that is send by the client and can only be used as an argument.
+> [HINT!]  
+> ``type`` vs. ``input``: object types like ``type`` are **output types** which respresent data the server sends back to the client. While on the other side the ``input`` type is an object that is send by the client and can only be used as an argument.
 
 Besides that you also have to make a small adaption inside your ``resolver.js`` file:
 
 ```js
   Mutation: {
-    createJob: (_root, { input: {title, description }}) => {
+    createJob: (_root, { ==input: {title, description }}) == => {
       const companyId = 'FjcJCHJALA4i'
       const job = createJob({companyId, title, description})
       return job
@@ -293,5 +298,5 @@ And the variables section looks like:
 }
 ```
 Run the mutation again and you will get the same result.
-> [!NOTE]  
+> [!TIP]  
 > In the mutation you can prefix the ``createJob`` like ``job: createJob(input: $input)``. With that small adaption you get a ``"job"`` object inside your json response.
