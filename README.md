@@ -309,3 +309,20 @@ And the variables section looks like:
 Run the mutation again and you will get the same result.
 > [!TIP]  
 > In the mutation you can prefix the ``createJob`` like ``job: createJob(input: $input)``. With that small adaption you get a ``"job"`` object inside your json response.
+
+## Authentication
+
+> [!IMPORTANT]  
+>  **Authentication** (beglaubing, bestätigen) is the process of verifying who as user is.  
+>  Example: At the airport check-in you first have to show your passport to authenticate your identity. If it is sucessful you get your boarding pass.  
+> The info is transmitted through an OpenID token which is the standard for allowing applications to verify users are you they say they are without needing to store users login data (because authentication of identity is done by a third party application). For example you sign in to microsoft by using your github account. Once you succesfully authenticate with github, github sends back information to microsoft about the user and the authentication performed. This info is send via JWT token.
+> 
+> **Authorization** (genehmigen, zulassen) is the process of verifying what the user has access to.  
+>  Example: At the airport gateway you present your boarding pass to the flight attendant so he can authorize you to enter the plane.  
+> The info is transmitted through an Access Token to access and share resources.
+
+
+```mermaid
+graph LR
+A(User) -->B(Authentication) -->C(Authorization) -->D(Resource)
+```
