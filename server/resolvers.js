@@ -22,8 +22,11 @@ export const resolvers = {
   },
 
   Mutation: {
-    createJob: (_root, { input: {title, description }}) => {
-      console.log(`Root: ${_root}, `)
+    createJob: (_root, { input: {title, description }}, context) => {
+      console.log(`[Create Job]: context: `, context.auth)
+      if (!context.auth) {
+        throw notAuthorizedError('No auth token available ');
+      }
       const companyId = 'FjcJCHJALA4i'
       const job = createJob({companyId, title, description})
       return job
@@ -51,6 +54,12 @@ export const resolvers = {
 function notFoundError(message) {
   return new GraphQLError(message, {
     extensions: { code: 'NOT_FOUND' },
+  });
+}
+
+function notAuthorizedError(message) {
+  return new GraphQLError(message, {
+    extensions: { code: 'NOT_AUTHORIZED' },
   });
 }
 
