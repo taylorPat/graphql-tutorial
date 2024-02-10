@@ -1,6 +1,7 @@
 import { GraphQLError } from 'graphql';
 import { getCompany } from './db/companies.js';
 import { createJob, deleteJob, getJob, getJobs, getJobsByCompany, updateJob } from './db/jobs.js';
+import { getUserByEmail } from './db/users.js';
 
 export const resolvers = {
   Query: {
@@ -22,13 +23,11 @@ export const resolvers = {
   },
 
   Mutation: {
-    createJob: (_root, { input: {title, description }}, context) => {
-      console.log(`[Create Job]: context: `, context.auth)
-      if (!context.auth) {
+    createJob: async (_root, { input: {title, description }}, {user}) => {
+      if (!user) {
         throw notAuthorizedError('No auth token available ');
       }
-      const companyId = 'FjcJCHJALA4i'
-      const job = createJob({companyId, title, description})
+      const job = createJob({companyId: user.companyId, title, description})
       return job
     },
     deleteJob: async (_root, { id }) => {

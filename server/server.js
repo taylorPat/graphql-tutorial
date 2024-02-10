@@ -5,9 +5,14 @@ import express from 'express';
 import { readFile } from 'node:fs/promises';
 import { authMiddleware, handleLogin } from './auth.js';
 import { resolvers } from './resolvers.js';
+import { getUser } from './db/users.js';
 
-function getcontext( {req, res }) {
-  return { auth : req.auth }
+async function getcontext( {req, res }) {
+  if (req.auth) {
+    const user = await getUser(req.auth.sub)
+    return {user}
+  }
+  return {}
 } 
 
 const PORT = 9000;
