@@ -31,14 +31,23 @@ export const resolvers = {
       return job
     },
     deleteJob: async (_root, { id }, {user}) => {
+      if (!user) {
+        throw notAuthorizedError('No auth token available ');
+      }
       const job = await deleteJob(id, user.companyId)
       if (!job) {
         throw notFoundError('No Job found with id ' + id);
       }
       return job
     },
-    updateJob: async (_root, {input: { id, title, description }}) => {
-      const job = await updateJob({ id, title, description})
+    updateJob: async (_root, {input: { id, title, description }}, {user}) => {
+      if (!user) {
+        throw notAuthorizedError('No auth token available ');
+      }
+      const job = await updateJob({ id, companyId: user.companyId, title, description})
+      if (!job) {
+        throw notFoundError('No Job found with id ' + id);
+      }
       return job
     }
   },
