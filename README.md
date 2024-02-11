@@ -313,7 +313,7 @@ Run the mutation again and you will get the same result.
 ## Authentication
 
 > [!IMPORTANT]  
->  **Authentication** (beglaubing, bestätigen) is the process of verifying who as user is.  
+>  **Authentication** (beglaubing, bestätigen) is the process of verifying who a user is.  
 >  Example: At the airport check-in you first have to show your passport to authenticate your identity. If it is sucessful you get your boarding pass.  
 > The info is transmitted through an OpenID token. [1] 
 
@@ -332,7 +332,7 @@ A(User) -->B(Authentication) -->C(Authorization) -->D(Resource)
 
 https://auth0.com/docs/get-started/identity-fundamentals/authentication-and-authorization
 
-### Authentication with GraphQL
+### Authentication process
 #### 1. Client logs in
 Before a user can create a new job, he has to login with its ``email`` and ``password`` at ``localhost:3000/login``. When he submits ``email`` and ``password`` the forms are sent to the server at ``localhost:9000/login``.
 
@@ -412,7 +412,7 @@ Again the express ``app`` provides a ``request`` and a ``reponse`` object. Insid
 
 
 > [!IMPORTANT]    
-> The ``auth`` attribute is already encoded. This is done by the authMiddleware in the ``server.js`` file. It is an ``express`` middleware which decodes the token based on the secret. You know have access to the ``sub`` and the ``email`` claims.
+> The ``auth`` attribute is already encoded. This is done by the ``authMiddleware`` in the ``server.js`` file. It is an ``express`` middleware which decodes the token based on the secret. You know have access to the ``sub`` and the ``email`` claims.
 
 Now you can access the ``auth`` object inside the ``createJob`` mutation and check if the ``auth`` object exists. If not, a ``notAuthorized`` error is thrown. Check out the ``resolver.js``:
 ```js
@@ -454,7 +454,7 @@ Mutation: {
 }
 ```
 
-> [!HINT]  
+> [!NOTE]  
 > When you know test the application end2end with creating a job you will see the authorization header in the request when open the developer tools ``[F12]``.
 
 ### Delete and update mutations
