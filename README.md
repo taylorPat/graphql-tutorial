@@ -462,3 +462,6 @@ I do not dig deep for the delete and update mutation but I just want to write do
 
 When deleting or updating an job by just applying the ``jobId`` it would be possible for users to delete jobs from other companies.
 The ``companyId`` we get from the user (which we get from the token) together with the ``jobId`` for the job which should be delete (we get from the mutation) we define a secure way for deleting jobs.
+
+### Why not do authentication inside GraphQL
+The process of authentication belongs to the underlying protocol (in this case HTTP) used to perform requests and not inside the GraphQL layer. The reason for this is that authentication depends on the underlying protocol. For example when using WebSockets instead of HTTP you would only have to authenticate once. GraphQL is just a query language which sits on top of the underlying protocol.
