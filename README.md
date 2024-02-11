@@ -455,7 +455,7 @@ Mutation: {
 ```
 
 > [!NOTE]  
-> When you know test the application end2end with creating a job you will see the authorization header in the request when open the developer tools ``[F12]``.
+> When you want to test the application end2end with creating a job you will see the authorization header in the request when open the developer tools ``[F12]``.
 
 ### Delete and update mutations
 I do not dig deep for the delete and update mutation but I just want to write down the important points.
