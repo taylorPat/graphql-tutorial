@@ -30,8 +30,11 @@ export const resolvers = {
       const job = createJob({companyId: user.companyId, title, description})
       return job
     },
-    deleteJob: async (_root, { id }) => {
-      const job = await deleteJob(id)
+    deleteJob: async (_root, { id }, {user}) => {
+      const job = await deleteJob(id, user.companyId)
+      if (!job) {
+        throw notFoundError('No Job found with id ' + id);
+      }
       return job
     },
     updateJob: async (_root, {input: { id, title, description }}) => {
