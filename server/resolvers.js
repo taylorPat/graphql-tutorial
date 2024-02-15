@@ -1,6 +1,7 @@
 import { GraphQLError } from 'graphql';
 import { getCompany } from './db/companies.js';
 import { createJob, deleteJob, getJob, getJobs, getJobsByCompany, updateJob } from './db/jobs.js';
+import { getUserByEmail } from './db/users.js';
 
 export const resolvers = {
   Query: {
@@ -22,18 +23,31 @@ export const resolvers = {
   },
 
   Mutation: {
-    createJob: (_root, { input: {title, description }}) => {
-      console.log(`Root: ${_root}, `)
-      const companyId = 'FjcJCHJALA4i'
-      const job = createJob({companyId, title, description})
+    createJob: async (_root, { input: {title, description }}, {user}) => {
+      if (!user) {
+        throw notAuthorizedError('No auth token available ');
+      }
+      const job = createJob({companyId: user.companyId, title, description})
       return job
     },
-    deleteJob: async (_root, { id }) => {
-      const job = await deleteJob(id)
+    deleteJob: async (_root, { id }, {user}) => {
+      if (!user) {
+        throw notAuthorizedError('No auth token available ');
+      }
+      const job = await deleteJob(id, user.companyId)
+      if (!job) {
+        throw notFoundError('No Job found with id ' + id);
+      }
       return job
     },
-    updateJob: async (_root, {input: { id, title, description }}) => {
-      const job = await updateJob({ id, title, description})
+    updateJob: async (_root, {input: { id, title, description }}, {user}) => {
+      if (!user) {
+        throw notAuthorizedError('No auth token available ');
+      }
+      const job = await updateJob({ id, companyId: user.companyId, title, description})
+      if (!job) {
+        throw notFoundError('No Job found with id ' + id);
+      }
       return job
     }
   },
@@ -51,6 +65,12 @@ export const resolvers = {
 function notFoundError(message) {
   return new GraphQLError(message, {
     extensions: { code: 'NOT_FOUND' },
+  });
+}
+
+function notAuthorizedError(message) {
+  return new GraphQLError(message, {
+    extensions: { code: 'NOT_AUTHORIZED' },
   });
 }
 

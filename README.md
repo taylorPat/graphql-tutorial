@@ -309,3 +309,159 @@ And the variables section looks like:
 Run the mutation again and you will get the same result.
 > [!TIP]  
 > In the mutation you can prefix the ``createJob`` like ``job: createJob(input: $input)``. With that small adaption you get a ``"job"`` object inside your json response.
+
+## Authentication
+
+> [!IMPORTANT]  
+>  **Authentication** (beglaubing, bestätigen) is the process of verifying who a user is.  
+>  Example: At the airport check-in you first have to show your passport to authenticate your identity. If it is sucessful you get your boarding pass.  
+> The info is transmitted through an OpenID token. [1] 
+
+[1] *Is the standard for allowing applications to verify users are you they say they are without needing to store users login data (because authentication of identity is done by a third party application). For example you sign in to microsoft by using your github account. Once you succesfully authenticate with github, github sends back information to microsoft about the user and the authentication performed. This info is send via JWT token.*
+
+> [!IMPORTANT]  
+> **Authorization** (genehmigen, zulassen) is the process of verifying what the user has access to.  
+>  Example: At the airport gateway you present your boarding pass to the flight attendant so he can authorize you to enter the plane.  
+> The info is transmitted through an Access Token to access and share resources.
+
+
+```mermaid
+graph LR
+A(User) -->B(Authentication) -->C(Authorization) -->D(Resource)
+```
+
+https://auth0.com/docs/get-started/identity-fundamentals/authentication-and-authorization
+
+### Authentication process
+#### 1. Client logs in
+Before a user can create a new job, he has to login with its ``email`` and ``password`` at ``localhost:3000/login``. When he submits ``email`` and ``password`` the forms are sent to the server at ``localhost:9000/login``.
+
+#### 2. Server checks login
+In the ``server.js`` you can see following code line:  
+
+```js
+app.post('/login', handleLogin);
+```  
+
+When logging in we call a function ``handleLogin``. This function is located in the **severs** ``auth.js`` and looks like:
+```js
+export async function handleLogin(req, res) {
+  const { email, password } = req.body;
+  const user = await getUserByEmail(email);
+  if (!user || user.password !== password) {
+    res.sendStatus(401);
+  } else {
+    const claims = { sub: user.id, email: user.email };
+    const token = jwt.sign(claims, secret);
+    res.json({ token });  
+  }
+}
+```
+The ``handleLogin`` function can access the the request and response attributes which are provided by the express ``app``. The body of the request contains the email and password. By getting the user from the db by email, we can check if the submitted password is the same as the password saved in the database. If not we send back a *401 UNAUTHORIZED*. On the other hand if it was succesful, we create a JWT token based on the ``claims`` (sub / userId, email) and the ``secret``. We then put the token in the response and return the response to the client.
+
+#### 3. Client safes token and makes it available for further requests
+
+The client then extracts the JWT token from the response and saves it in the localStorage of its browser.
+
+> [!Caution]  
+> It is probably not the best solution to safe the JWT token inside the local storage of your browser.  
+
+The only thing for the client which is left now is that it needs to provide this JWT token when making a request to the server. This is done inside the ``GraphQLClient`` in the ``queries.js``:
+```js
+const client = new GraphQLClient('http://localhost:9000/graphql', {
+  headers: () => {
+    const token = getAccessToken();
+    if (token) {
+      return { 'Authorization': `Bearer ${token}`};
+    }
+    return {};
+  }
+});
+```
+We extend the already existing ``GraphQLClient`` with the headers attribute which calls the ``getAccessToken`` function to get the JWT token (gets the token from the local storage of the browser) and if the token is available it returns the ``'Authorization'`` header with its Bearer token.
+
+> [!NOTE]  
+> HTTP headers are case insensitive so you could also have written ``'authorization'`` instead of ``'Authorization'``.
+
+> [!NOTE]  
+> ``headers`` uses a function to get the token. So we can be sure that the latest token is send to the server. If we would simply pass an object instead of a function, the token will be set once when the ``GraphQLClient`` is called. This happens only once when the app is loaded by the browser. In this case the initial value of the token will never change even if the user logs in later. So our client authentication will not work properly.
+
+#### 4. Server checks the client token
+
+The server then checks the token send by the client via the ``authMiddleware`` inside the ``server.js``:  
+```js
+app.use(cors(), express.json(), authMiddleware);
+```
+
+### Mutate job with authorization
+In the mutation for creating a job we also want to check on the server side if there is an authorization header with a Bearer token available. 
+
+First we need to get the headers. This is done inside the apolloMiddleware in the server.js: 
+```js
+app.use('/graphql', apolloMiddleware(apolloServer, { context: getcontext}));
+```
+With ``getContext`` defined as:
+```js
+function getcontext( {req, res }) {
+  return { auth : req.auth }
+} 
+```
+Again the express ``app`` provides a ``request`` and a ``reponse`` object. Inside the request object you can access the ``auth`` attribute now. The ``context`` object now includes ``{ auth : req.auth }``. 
+> [!IMPORTANT]    
+> express maps the ``authorization`` header to the ``auth`` attribute.
+
+
+> [!IMPORTANT]    
+> The ``auth`` attribute is already encoded. This is done by the ``authMiddleware`` in the ``server.js`` file. It is an ``express`` middleware which decodes the token based on the secret. You know have access to the ``sub`` and the ``email`` claims.
+
+Now you can access the ``auth`` object inside the ``createJob`` mutation and check if the ``auth`` object exists. If not, a ``notAuthorized`` error is thrown. Check out the ``resolver.js``:
+```js
+Mutation: {
+  createJob: (_root, { input: {title, description }}, context) => {
+      console.log(`[Create Job]: context: `, context.auth)
+      if (!context.auth) {
+        throw notAuthorizedError('No auth token available ');
+      }
+      const companyId = 'FjcJCHJALA4i'
+      # ...
+    }
+  }
+```
+There is still the hardcoded ``companyId``. We will fix it in the next section.
+### Use user information from the token
+Since we now have access to the ``context.auth`` object we can try inside the ``getContext`` to get the user from the db by the ``sub`` attribute and make the user accesible for the graphQL ``createJob`` mutation.
+
+After a small refactoring the ``getContext`` looks like:
+```js
+async function getcontext( {req, res }) {
+  if (req.auth) {
+    const user = await getUser(req.auth.sub)
+    return {user}
+  }
+  return {}
+}
+```
+And now inside the ``resolver.js`` you can access and check the user inside the ``createJob`` mutation:
+```js
+Mutation: {
+    createJob: async (_root, { input: {title, description }}, {user}) => {
+      if (!user) {
+        throw notAuthorizedError('No auth token available ');
+      }
+      const job = createJob({companyId: user.companyId, title, description})
+      return job
+    }
+}
+```
+
+> [!NOTE]  
+> When you want to test the application end2end with creating a job you will see the authorization header in the request when open the developer tools ``[F12]``.
+
+### Delete and update mutations
+I do not dig deep for the delete and update mutation but I just want to write down the important points.
+
+When deleting or updating an job by just applying the ``jobId`` it would be possible for users to delete jobs from other companies.
+The ``companyId`` we get from the user (which we get from the token) together with the ``jobId`` for the job which should be delete (we get from the mutation) we define a secure way for deleting jobs.
+
+### Why not do authentication inside GraphQL
+The process of authentication belongs to the underlying protocol (in this case HTTP) used to perform requests and not inside the GraphQL layer. The reason for this is that authentication depends on the underlying protocol. For example when using WebSockets instead of HTTP you would only have to authenticate once. GraphQL is just a query language which sits on top of the underlying protocol.
