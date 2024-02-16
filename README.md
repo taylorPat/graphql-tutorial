@@ -309,3 +309,47 @@ And the variables section looks like:
 Run the mutation again and you will get the same result.
 > [!TIP]  
 > In the mutation you can prefix the ``createJob`` like ``job: createJob(input: $input)``. With that small adaption you get a ``"job"`` object inside your json response.
+
+## Caching for the client
+In this chapter we are going through the process of caching on the client side. This will make our FE more performant in a way that we do not have to make multiple calls for getting the same data from the server. 
+
+For this we have to run 
+```bash
+npm install @apollo/client
+```
+ in our terminal to install ``@apollo/client``. 
+
+ We will now migrate step by step our current implementation which uses ``graphql-request`` to ``@apollo/client``.
+
+ ### 1. Instanciate Apollo Client
+ Inside ``client/src/lib/graphql/queries.js`` we instanciate the ``ApolloClient`` defining an ``uri`` and a ``cache``.
+ ```js
+import { GraphQLClient, gql} from 'graphql-request';
+import { ApolloClient, InMemoryCache } from '@apollo/client'
+
+const apolloClient = new ApolloClient({
+  uri: 'http://localhost:9000/graphql', 
+  cache: new InMemoryCache()
+  }
+)
+ ```
+ >[!TIP]  
+ > **U**niform **R**esource **I**dentifier vs. **U**niform **R**esource **L**ocator vs. **U**niform **R**esource **N**ame
+ > An URI ist a string which identifies any resource using a name and / or a location and differs it from other resources whereas a URL just defines a location of a unique resource. A URN is a location independent identifier.
+ > Example URI: ISBN-0-422-34567-9
+ > Example URL: https://test.de (domain plus port)
+ > 
+
+ ### 2. Replace the gql function from graphql-request by apollo/client
+ We now replace the gql function from graphql-request by @apollo/client.
+  ```js
+import { GraphQLClient} from 'graphql-request';
+import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
+ ```
+ Using the gql function from ``@apollo/client`` has the advantage of parsing an GraphQL query string into the standard GraphQL AST. The type of the returned object is no langer a string but a document node. And that type is needed for the ``ApolloClient``. By the way it also parses the string, so you will notify if there is an syntax error.
+
+>[!TIP]  
+> AST stands for Abstract Syntax Tree which is an object that represents the structure of a GraphQL query or mutation.
+
+
+ We still use the ``GraphQLClient`` in our implementation and your app is still running because the ``GraphQLClient`` can also handle document node next to a template literal.
