@@ -336,9 +336,8 @@ const apolloClient = new ApolloClient({
  >[!TIP]  
  > **U**niform **R**esource **I**dentifier vs. **U**niform **R**esource **L**ocator vs. **U**niversal **R**esource **N**ame  
  > An URI ist a string which identifies any resource using a name and / or a location and differs it from other resources whereas a URL just defines a location of a unique resource. A URN is a location independent identifier.  
- > Example URI: ISBN-0-422-34567-9
+ > Example URI: ISBN-0-422-34567-9  
  > Example URL: https://test.de (domain plus port)
- > 
 
  ### 2. Replace the gql function from graphql-request by apollo/client
  We now replace the gql function from graphql-request by @apollo/client.
