@@ -352,3 +352,115 @@ import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
 
 
  We still use the ``GraphQLClient`` in our implementation and your app is still running because the ``GraphQLClient`` can also handle document node next to a template literal.
+
+ ### 3. Queries: Replace the GraphqlClient by the ApolloClient
+ Now we can use the ``ApolloClient`` and call the ``query`` method giving it the ``query`` object as an argument. 
+
+ ```js
+ export async function getJobs() {
+  const query = gql`
+    #  query
+  `;
+  // const { jobs } = await client.request(query);
+  const result = await apolloClient.query({query});
+  return result.data.jobs;
+}
+ ```
+When you need to add variables to your query e.g. when you call the ``getCompany`` or ``getJob`` functions then you simply add the ``variables`` argument to the query and pass it the ``id``.
+```js
+  const result = await apolloClient.query({
+    query: query,
+    variables: {
+      id
+    }
+  });
+  return result.data.company
+```
+
+### 4. Mutations: Replace the GraphqlClient by the ApolloClient
+Apollo client uses so called links to send data to the server. You can define as many links as you want. For example we can use the createHttpLink method to create a link based on the uri.
+```js
+const httpLink = createHttpLink({uri: 'http://localhost:9000/graphql'})
+
+const apolloClient = new ApolloClient({
+  httpLink: httpLink,
+  cache: new InMemoryCache()
+  }
+)
+```
+
+> [!TIP]  
+> When you do not specify a createHttpLink but you just give the ApolloClient the uri (as we did before) then @apollo/client creates the http link implicitly.
+
+Additionally we can define custom links. We need those e.g. to provide authorization within the @apollo/client:
+```js
+import { ApolloLink, concat } from '@apollo/client'
+
+const customLink = new ApolloLink((operation, forward) => {
+  console.log(`[customLink] operation:`, operation);
+  return forward(operation);
+})
+```
+You define a custom link by instanciating ApolloLink which gets a function which gets two arguments operation and forward. The operation is a graphql query or mutation and the forward is a function which forwards the operation.
+
+We can then use the httpLink togethere with our custom link by concatenating both:
+```js
+const apolloClient = new ApolloClient({
+  httpLink: concat(customLink, httpLink),
+  cache: new InMemoryCache()
+  }
+)
+```
+For implementing authorization inside our ApolloClient we define following link:
+```js
+const customLink = new ApolloLink((operation, forward) => {
+  const accessToken = getAccessToken();
+  if (accessToken) {
+    operation.setContext(
+      {
+        headers: {'Authorization': `Bearer ${accessToken}`},
+      }
+  );
+  }
+  return forward(operation);
+});
+```
+The app is still working. We replaced the graphql-request client with the @apollo/client.
+
+> [!TIP]  
+> data normalization
+> Saving each object separately avoids duplication and therefore makes the cache use less memory.
+
+> [!TIP]  
+> Download the apollo client devtool for your browser to inspect the data which is queried and cached.
+
+### Cache policies
+```js
+export async function getJobs() {
+  // query
+  const result = await apolloClient.query({
+    query,
+    fetchPolicy: 'cache-first'
+  });
+  return result.data.jobs;
+```
+Within the query method of the ApolloClient instance you can define a fetchPolicy attribute which accepts different values. Some are listed here:
+- cache-first (default)
+- network-only for always fetchin the data from the server
+
+Instead of defining the fetch policy inside each query you can also define a default behaviour inside the ApolloClient for different operations:
+```js
+const apolloClient = new ApolloClient({
+  httpLink: concat(customLink, httpLink),
+  cache: new InMemoryCache(),
+  defaultOptions: {
+    query: {
+      fetchPolicy: 'network-only'
+    }
+  }
+  }
+)
+```
+> [!TIP]  
+> Also see the documentation for furhter policies https://www.apollographql.com/docs/react/data/queries/#supported-fetch-policies
+

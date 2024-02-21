@@ -1,10 +1,24 @@
 import { GraphQLClient} from 'graphql-request';
-import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
+import { ApolloClient, ApolloLink, InMemoryCache, createHttpLink, gql, concat } from '@apollo/client'
+import {getAccessToken} from '../auth';
 
-const client = new GraphQLClient('http://localhost:9000/graphql');
+
+const httpLink = createHttpLink({uri: 'http://localhost:9000/graphql'})
+
+const customLink = new ApolloLink((operation, forward) => {
+  const accessToken = getAccessToken();
+  if (accessToken) {
+    operation.setContext(
+      {
+        headers: {'Authorization': `Bearer ${accessToken}`},
+      }
+  );
+  }
+  return forward(operation);
+});
 
 const apolloClient = new ApolloClient({
-  uri: 'http://localhost:9000/graphql', 
+  httpLink: concat(customLink, httpLink),
   cache: new InMemoryCache()
   }
 )
@@ -17,8 +31,13 @@ export async function createJob( {title, description}) {
       }
     }
   `
-  const { job } = await client.request(mutation, {input: { title, description } });
-  return job
+  const result = await apolloClient.mutate({
+    mutation: mutation,
+    variables: {
+      input: { title, description }
+    },
+  })
+  return result.data.job
 }
 
 export async function getCompany(id) {
@@ -36,8 +55,13 @@ export async function getCompany(id) {
       }
     }
   `;
-  const { company } = await client.request(query, { id });
-  return company;
+  const result = await apolloClient.query({
+    query: query,
+    variables: {
+      id
+    }
+  });
+  return result.data.company
 }
 
 export async function getJob(id) {
@@ -55,8 +79,13 @@ export async function getJob(id) {
       }
     }
   `;
-  const { job } = await client.request(query, { id });
-  return job;
+  const result = await apolloClient.query( {
+    query: query,
+    variables: {
+      id
+    }
+  });
+  return result.data.job;
 }
 
 export async function getJobs() {
@@ -73,6 +102,9 @@ export async function getJobs() {
       }
     }
   `;
-  const { jobs } = await client.request(query);
-  return jobs;
+  const result = await apolloClient.query({
+    query,
+    fetchPolicy: 'cache-first'
+  });
+  return result.data.jobs;
 }
