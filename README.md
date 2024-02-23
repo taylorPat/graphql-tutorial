@@ -428,7 +428,7 @@ const customLink = new ApolloLink((operation, forward) => {
 The app is still working. We replaced the graphql-request client with the @apollo/client.
 
 > [!TIP]  
-> data normalization
+> data normalization  
 > Saving each object separately avoids duplication and therefore makes the cache use less memory.
 
 > [!TIP]  
@@ -462,5 +462,92 @@ const apolloClient = new ApolloClient({
 )
 ```
 > [!TIP]  
-> Also see the documentation for furhter policies https://www.apollographql.com/docs/react/data/queries/#supported-fetch-policies
+> Also see the documentation for further policies https://www.apollographql.com/docs/react/data/queries/#supported-fetch-policies
 
+### Cache manipulation
+When we create a new job, after pressing submit we are forwarded to the new job details page. This process is doing two graphql operations. The first one to create a job (mutation, returns jobId) and the second one to query the job by id to show the job in the job details page.
+
+There is a more performant way. Let's have a look.
+The idea is to make just one graphql operation. This means when we create a new job on the client side, we do want to get the whole job object in return rather than just the jobId. This job object is then saved directly in the cache, where we can access it when creating the job details page.
+
+```js
+export async function createJob( {title, description}) {
+  const mutation = gql`
+    mutation CreateJob($input: CreateJobInput!) {
+      job: createJob(input: $input) {
+        id
+        date
+        title
+        company {
+          id
+          name
+        }
+        description
+      }
+    }
+  `
+  const result = await apolloClient.mutate({
+    mutation: mutation,
+    variables: {
+      input: { title, description },      
+    },
+    update: (cache, {data}) => {
+      cache.writeQuery({
+        query: jobByIdQuery,
+        variables: { id: data.job.id },
+        data: data
+      })
+    }
+  })
+  return result.data.job
+}
+```
+
+As mentioned the ``createJob`` now returns the full job object, which we then use in the update argument which we added now. This update argument gets the cache and the data returned from the mutation (in our case the job object) and writes it to the cache. To do so it needs to now the query but instead of sending an additional query to the server, the update method queries the cache with the defined query (jobByIdQuery) and additionally define the variables as you do when querying data from the server. Furthermore you define the data you want to write to the cache.
+
+### Fragments
+In GraphQL you can avoid boilerplate code by using fragments.
+
+In your apollo sandbox you define the operation like so:
+```gql
+query GetJobById($id: ID!) {
+  job(id: $id) {
+    ...JobDetail
+  }
+}
+
+fragment JobDetail on Job {
+  id
+  description
+}
+```
+And the variables section just defines the job id:
+```gql
+{"id": "f3YzmnBZpK0o"}
+```
+
+In javascript code it looks a little different:
+```js
+const jobDetailFragment = gql`
+  fragment JobDetail on Job {
+    id
+    date
+    title
+    company {
+      id
+      name
+    }
+    description
+  }
+`;
+
+const jobByIdQuery = gql`
+    query JobById($id: ID!) {
+      job(id: $id) {
+        ...JobDetail
+      }
+    }
+    ${jobDetailFragment}
+  `;
+```
+The defintion is the same like in the sandbox but using the fragment inside your query you make use of the backtick delimited sting to use the fragment as expression. This way you have the same structure as in the sandbox (the query and the fragment are defined inside the operation section).
